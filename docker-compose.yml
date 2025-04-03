@@ -1,0 +1,37 @@
+services:
+    gestor.contactos.interno.back:
+        build:
+            context: ./docker
+            dockerfile: Dockerfile
+        image: gestor-contactos-internos-backend
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-8016}:80'
+        volumes:
+            - '.:/var/www/'
+        networks:
+            - gestor-contactos-internos-backend
+        depends_on:
+            - mysqldb
+    mysqldb:
+        image: 'mysql:8.0.36-debian'
+        ports:
+            - '${FORWARD_DB_PORT:-3316}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        volumes:
+            - 'gestor-contactos-internos-backend-mysqldb:/var/lib/mysql'
+        networks:
+            - gestor-contactos-internos-backend
+networks:
+    gestor-contactos-internos-backend:
+        driver: bridge
+volumes:
+    gestor-contactos-internos-backend-mysqldb:
+        driver: local
